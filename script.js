@@ -419,13 +419,51 @@ class SudokuGame {
     }
 
     checkWin() {
+        // 1. 모든 칸이 채워졌는지 확인 (빈칸인 0이 없어야 함)
         for (let r = 0; r < 9; r++) {
             for (let c = 0; c < 9; c++) {
-                if (this.board[r][c] === 0 || this.board[r][c] !== this.solution[r][c]) {
+                if (this.board[r][c] === 0) {
                     return false;
                 }
             }
         }
+
+        // 2. 가로줄 중복 검사
+        for (let r = 0; r < 9; r++) {
+            const rowSet = new Set();
+            for (let c = 0; c < 9; c++) {
+                const val = this.board[r][c];
+                if (rowSet.has(val)) return false;
+                rowSet.add(val);
+            }
+        }
+
+        // 3. 세로줄 중복 검사
+        for (let c = 0; c < 9; c++) {
+            const colSet = new Set();
+            for (let r = 0; r < 9; r++) {
+                const val = this.board[r][c];
+                if (colSet.has(val)) return false;
+                colSet.add(val);
+            }
+        }
+
+        // 4. 3x3 서브 그리드 블록 중복 검사
+        for (let blockRow = 0; blockRow < 3; blockRow++) {
+            for (let blockCol = 0; blockCol < 3; blockCol++) {
+                const blockSet = new Set();
+                const startRow = blockRow * 3;
+                const startCol = blockCol * 3;
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 3; c++) {
+                        const val = this.board[startRow + r][startCol + c];
+                        if (blockSet.has(val)) return false;
+                        blockSet.add(val);
+                    }
+                }
+            }
+        }
+
         return true;
     }
 
