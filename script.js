@@ -363,7 +363,8 @@ class SudokuGame {
             row: row,
             col: col,
             val: this.board[row][col],
-            memos: new Set(this.memos[row][col]) 
+            memos: new Set(this.memos[row][col]),
+            affectedMemos: [] // ◀ 자동 정리로 영향받을 주변 메모 정보 기록용
         };
 
         let isChanged = false;
@@ -387,6 +388,31 @@ class SudokuGame {
                 this.board[row][col] = num;
                 this.memos[row][col].clear();
                 isChanged = true;
+
+                // 💡 진짜 숫자 입력 시 가로, 세로, 3x3 박스의 메모 자동 삭제 로직 추가
+                const startRow = row - row % 3;
+                const startCol = col - col % 3;
+                for (let r = 0; r < 9; r++) {
+                    for (let c = 0; c < 9; c++) {
+                        // 자기 자신은 스킵
+                        if (r === row && c === col) continue;
+
+                        const isSameRow = (r === row);
+                        const isSameCol = (c === col);
+                        const isSameBlock = (r >= startRow && r < startRow + 3 && c >= startCol && c < startCol + 3);
+
+                        if (isSameRow || isSameCol || isSameBlock) {
+                            if (this.memos[r][c].has(num)) {
+                                prevStatus.affectedMemos.push({
+                                    row: r,
+                                    col: c,
+                                    memos: new Set(this.memos[r][c]) // 이전 메모 깊은 복사
+                                });
+                                this.memos[r][c].delete(num);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -408,11 +434,18 @@ class SudokuGame {
 
         // 가장 마지막에 저장된 행동 기록을 추출
         const lastAction = this.history.pop();
-        const { row, col, val, memos } = lastAction;
+        const { row, col, val, memos, affectedMemos } = lastAction;
 
         // 이전 상태로 데이터 원복
         this.board[row][col] = val;
         this.memos[row][col] = memos;
+
+        // 자동 정리되었던 주변 메모들 복원
+        if (affectedMemos && affectedMemos.length > 0) {
+            for (const affected of affectedMemos) {
+                this.memos[affected.row][affected.col] = affected.memos;
+            }
+        }
 
         // 셀 선택 위치를 되돌린 곳으로 이동
         this.selectedCell = { row, col };
@@ -587,7 +620,12 @@ class SudokuGame {
             row: action.row,
             col: action.col,
             val: action.val,
-            memos: Array.from(action.memos)
+            memos: Array.from(action.memos),
+            affectedMemos: action.affectedMemos ? action.affectedMemos.map(a => ({
+                row: a.row,
+                col: a.col,
+                memos: Array.from(a.memos)
+            })) : []
         }));
 
         const state = {
@@ -628,7 +666,12 @@ class SudokuGame {
                 row: action.row,
                 col: action.col,
                 val: action.val,
-                memos: new Set(action.memos)
+                memos: new Set(action.memos),
+                affectedMemos: action.affectedMemos ? action.affectedMemos.map(a => ({
+                    row: a.row,
+                    col: a.col,
+                    memos: new Set(a.memos)
+                })) : []
             }));
 
             // 난이도 드롭다운 싱크
