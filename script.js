@@ -32,6 +32,12 @@ class SudokuGame {
         this.restoreYesBtn = document.getElementById('restore-yes-btn');
         this.restoreNoBtn = document.getElementById('restore-no-btn');
 
+        // ◀ 축하 모달 요소 바인딩
+        this.winModal = document.getElementById('win-modal');
+        this.winNewGameBtn = document.getElementById('win-new-game-btn');
+        this.winCloseBtn = document.getElementById('win-close-btn');
+        this.winTimeDisplay = document.getElementById('win-time-display');
+
         // 💡 첫 로딩 시 기존에 저장된 테마 불러오기
         const savedTheme = localStorage.getItem('sudoku-theme') || 'light';
         document.body.setAttribute('data-theme', savedTheme);
@@ -145,6 +151,17 @@ class SudokuGame {
             });
         }
 
+        // ◀ 축하 모달 버튼 이벤트 추가
+        if (this.winNewGameBtn && this.winCloseBtn) {
+            this.winNewGameBtn.addEventListener('click', () => {
+                if (this.winModal) this.winModal.style.display = 'none';
+                this.startNewGame();
+            });
+            this.winCloseBtn.addEventListener('click', () => {
+                if (this.winModal) this.winModal.style.display = 'none';
+            });
+        }
+
         // ◀ 브라우저 새로고침/탭 닫기 방지 경고 및 나갈 때 타이머 저장
         window.addEventListener('beforeunload', (e) => {
             if (!this.isGameOver && this.hasUserMoves()) {
@@ -163,6 +180,7 @@ class SudokuGame {
 
     startNewGame() {
         this.isGameOver = false;
+        if (this.winModal) this.winModal.style.display = 'none';
         this.messageElement.textContent = '';
         this.messageElement.style.color = '';
         this.memos = Array(9).fill().map(() => Array(9).fill().map(() => new Set()));
@@ -470,6 +488,18 @@ class SudokuGame {
     handleWin() {
         this.isGameOver = true;
         clearInterval(this.timerInterval);
+        
+        // 시간 포맷 생성
+        const mins = Math.floor(this.timer / 60).toString().padStart(2, '0');
+        const secs = (this.timer % 60).toString().padStart(2, '0');
+        if (this.winTimeDisplay) {
+            this.winTimeDisplay.textContent = `소요 시간: ${mins}:${secs}`;
+        }
+        
+        if (this.winModal) {
+            this.winModal.style.display = 'flex';
+        }
+
         this.messageElement.textContent = '🎉 축하합니다! 스도쿠를 해결했습니다!';
         this.messageElement.style.color = '#10b981';
         this.clearSavedState(); // ◀ 게임 클리어 시 자동 저장된 정보 비우기
