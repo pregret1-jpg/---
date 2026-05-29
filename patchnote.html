@@ -306,7 +306,22 @@
                     </div>
                 </div>
 
-                <!-- 4. 빌드 및 배포 관리 -->
+                <!-- 4. 모바일 사파리 레이아웃 호환성 수정 -->
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <span class="feature-name">📱 모바일 사파리(iOS) 레이아웃 고정 및 호환성 개선</span>
+                        <span class="feature-badge badge-ux">버그 수정(Hotfix)</span>
+                    </div>
+                    <p class="feature-desc">모바일 사파리 브라우저에서 메모나 진짜 숫자 입력 시 그리드 칸의 높이가 유동적으로 변하며 레이아웃이 깨지던 호환성 버그를 수정했습니다.</p>
+                    <div class="feature-details">
+                        <ul>
+                            <li><b>그리드 행 높이 고정:</b> <code>.sudoku-grid</code>에 <code>grid-template-rows: repeat(9, 1fr);</code>을 정의하여 모든 행의 높이를 9등분으로 강제 고정했습니다.</li>
+                            <li><b>셀 단위 박스 비율 및 오버플로우 방지:</b> <code>.cell</code>에 <code>aspect-ratio: 1 / 1;</code>, <code>box-sizing: border-box;</code>, <code>overflow: hidden;</code>을 추가로 선언하여 내부 텍스트나 메모 그리드의 양과 상관없이 항상 일정한 높이와 비율을 유지하도록 강제했습니다.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 5. 빌드 및 배포 관리 -->
                 <div class="feature-card">
                     <div class="feature-header">
                         <span class="feature-name">📦 패키징 및 Git 이력 관리</span>
